@@ -1497,8 +1497,8 @@ impl AuthorityPerEpochStore {
             .into_iter()
             .partition(|tx| tx.0.is_end_of_publish());
 
-        let mut batch = self.db_batch();
         for tx in &other_txns {
+            let mut batch = self.db_batch();
             if let Some(cert) = self
                 .process_consensus_transaction(
                     &mut batch,
@@ -1510,8 +1510,8 @@ impl AuthorityPerEpochStore {
             {
                 verified_certificates.push(cert);
             }
+            batch.write()?;
         }
-        batch.write()?;
 
         self.process_end_of_publish_transactions(&end_of_publish_txns)?;
 
