@@ -1511,10 +1511,9 @@ impl AuthorityPerEpochStore {
                 verified_certificates.push(cert);
             }
         }
-
-        let _lock = self.process_end_of_publish_transactions(&mut batch, &end_of_publish_txns)?;
-
         batch.write()?;
+
+        self.process_end_of_publish_transactions(&end_of_publish_txns)?;
 
         for tx in other_txns.iter().chain(end_of_publish_txns.iter()) {
             let key = tx.0.transaction.key();
@@ -1526,9 +1525,9 @@ impl AuthorityPerEpochStore {
 
     fn process_end_of_publish_transactions(
         &self,
-        write_batch: &mut DBBatch,
         transactions: &[VerifiedSequencedConsensusTransaction],
-    ) -> SuiResult<Option<parking_lot::RwLockWriteGuard<ReconfigState>>> {
+    ) -> SuiResult {
+        let mut write_batch = self.db_batch();
         let mut write_lock = None;
 
         for transaction in transactions {
@@ -1571,7 +1570,7 @@ impl AuthorityPerEpochStore {
                     let mut lock = self.get_reconfig_state_write_lock_guard();
                     lock.close_all_certs();
                     // We store reconfig_state and end_of_publish in same batch to avoid dealing with inconsistency here on restart
-                    self.store_reconfig_state_batch(&lock, write_batch)?;
+                    self.store_reconfig_state_batch(&lock, &mut write_batch)?;
                     write_batch.insert_batch(
                         &self.tables.final_epoch_checkpoint,
                         [(
@@ -1586,7 +1585,7 @@ impl AuthorityPerEpochStore {
                 // If some day we won't panic in ConsensusHandler on error we need to figure out here how
                 // to revert in-memory state of .end_of_publish and .reconfig_state when write fails
                 self.finish_consensus_transaction_process_with_batch(
-                    write_batch,
+                    &mut write_batch,
                     transaction.key(),
                     consensus_index,
                 )?;
@@ -1596,7 +1595,8 @@ impl AuthorityPerEpochStore {
                 );
             }
         }
-        Ok(write_lock)
+        write_batch.write()?;
+        Ok(())
     }
 
     async fn process_consensus_transaction<C: CheckpointServiceNotify>(
