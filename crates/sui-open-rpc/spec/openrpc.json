@@ -4984,6 +4984,24 @@
                 ]
               }
             }
+          },
+          {
+            "type": "object",
+            "required": [
+              "code",
+              "error"
+            ],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "displayError"
+                ]
+              },
+              "error": {
+                "type": "string"
+              }
+            }
           }
         ]
       },
