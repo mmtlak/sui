@@ -1,0 +1,9 @@
+processed 3 tasks
+
+task 1 'publish'. lines 6-10:
+created: object(104), object(105)
+written: object(103)
+
+task 2 'upgrade'. lines 12-16:
+Error: Transaction Effects Status: Attempted to used feature that is not supported yet
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: FeatureNotYetSupported, source: None, command: Some(0) } }
