@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import "./App.css";
-import { ConnectButton, useWalletKit } from "@mysten/wallet-kit";
+import {
+  ConnectButton,
+  useWalletKit,
+  WalletKitProvider,
+} from "@mysten/wallet-kit";
 import { TransactionBlock } from "@mysten/sui.js";
 import { useEffect } from "react";
+import { CustodialConnectButton } from "./CustodialConnectButton";
 
 const transactionBlock = new TransactionBlock();
 transactionBlock.moveCall({
@@ -66,6 +71,14 @@ function App() {
         >
           Sign message
         </button>
+      </div>
+      <hr />
+      <div>
+        <h3>Custodial Connect</h3>
+        {/* features here will filter out any other installed wallets that don't support custodial connect */}
+        <WalletKitProvider features={["suiWallet:custodialConnect"]}>
+          <CustodialConnectButton />
+        </WalletKitProvider>
       </div>
     </div>
   );
